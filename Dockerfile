@@ -1,5 +1,5 @@
 FROM ubuntu:18.04
-# Find and Replace APPDIR with whatever the current project is
+# Find and Replace app with whatever the current project is
 
 MAINTAINER antimodes201
 
@@ -7,26 +7,20 @@ MAINTAINER antimodes201
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Set some Variables
-ENV BRANCH "public"
-ENV INSTANCE_NAME "default"
-ENV GAME_PORT "7777"
-ENV GAME_PORT2 "7778"
-ENV QUERY_PORT "27015"
-ENV RCON_PORT "27020"
 ENV TZ "America/New_York"
 
 # dependencies
 RUN dpkg --add-architecture i386 && \
         apt-get update && \
         apt-get install -y --no-install-recommends \
-		lib32gcc1 \
-		wget \
-		unzip \
-		tzdata \
-		wine-stable \		
-		xvfb \
-		ca-certificates && \
-		rm -rf /var/lib/apt/lists/*
+                lib32gcc1 \
+                wget \
+                unzip \
+                tzdata \
+                wine-stable \
+                xvfb \
+                ca-certificates && \
+                rm -rf /var/lib/apt/lists/*
 
 # create directories
 RUN adduser \
@@ -36,30 +30,21 @@ RUN adduser \
     steamuser && \
     usermod -G tty steamuser \
         && mkdir -p /steamcmd \
-        && mkdir -p /APPDIR \
-		&& mkdir -p /scripts \
-        && chown steamuser:steamuser /APPDIR \
+        && mkdir -p /app \
+                && mkdir -p /scripts \
+        && chown steamuser:steamuser /app \
         && chown steamuser:steamuser /steamcmd \
-		&& chown steamuser:steamuser /scripts 
+        && chown steamuser:steamuser /scripts
 
 # Install Steamcmd
 USER steamuser
 RUN cd /steamcmd && \
-	wget https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz && \
-	tar -xf steamcmd_linux.tar.gz && \
-	rm steamcmd_linux.tar.gz && \
-	/steamcmd/steamcmd.sh +quit
-
-ADD start.sh /scripts/start.sh
-
-# Expose some port
-EXPOSE ${GAME_PORT}/udp
-EXPOSE ${GAME_PORT2}/udp
-EXPOSE ${QUERY_PORT}/udp
-EXPOSE ${RCON_PORT}/tcp
+        wget https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz && \
+        tar -xf steamcmd_linux.tar.gz && \
+        rm steamcmd_linux.tar.gz && \
+        /steamcmd/steamcmd.sh +quit
 
 # Make a volume
-# contains configs and world saves
-VOLUME /APPDIR
+# contains app, configs, and saves
+VOLUME /app
 
-CMD ["/scripts/start.sh"]
